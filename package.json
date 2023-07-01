@@ -1,0 +1,17 @@
+{
+  "name": "rsc-from-scratch",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "Kazuhiro Mimaki",
+  "dependencies": {
+    "escape-html": "^1.0.3",
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21"
+  }
+}
