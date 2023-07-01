@@ -1,14 +1,77 @@
 import { createServer } from "http";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
 import escapeHtml from "escape-html";
+import sanitizeFilename from "sanitize-filename";
 
 createServer(async (req, res) => {
-  const author = "Jae Doe";
-  const postContent = await readFile("./posts/hello-world.txt", "utf8");
-  sendHTML(res, <BlogPostPage author={author} postContent={postContent} />);
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const page = await matchRoute(url);
+    sendHTML(res, <BlogLayout>{page}</BlogLayout>);
+  } catch (err) {
+    console.error(err);
+    res.statusCode = err.statusCode ?? 500;
+    res.end();
+  }
 }).listen(8080);
 
-function BlogPostPage({ postContent, author }) {
+async function matchRoute(url) {
+  if (url.pathname === "/") {
+    const postFiles = await readdir("./posts");
+    const postSlugs = postFiles.map((file) =>
+      file.slice(0, file.lastIndexOf("."))
+    );
+    const postContents = await Promise.all(
+      postSlugs.map((postSlug) =>
+        readFile("./posts/" + postSlug + ".txt", "utf8")
+      )
+    );
+    return <BlogIndexPage postSlugs={postSlugs} postContents={postContents} />;
+  } else {
+    const postSlug = sanitizeFilename(url.pathname.slice(1));
+    try {
+      const postContent = await readFile(
+        "./posts/" + postSlug + ".txt",
+        "utf8"
+      );
+      return <BlogPostPage postSlug={postSlug} postContent={postContent} />;
+    } catch (err) {
+      throwNotFound(err);
+    }
+  }
+}
+
+function BlogIndexPage({ postSlugs, postContents }) {
+  return (
+    <section>
+      <h1>Welcome to my blog</h1>
+      <div>
+        {postSlugs.map((postSlug, index) => (
+          <section key={postSlug}>
+            <h2>
+              <a href={"/" + postSlug}>{postSlug}</a>
+            </h2>
+            <article>{postContents[index]}</article>
+          </section>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BlogPostPage({ postSlug, postContent }) {
+  return (
+    <section>
+      <h2>
+        <a href={"/" + postSlug}>{postSlug}</a>
+      </h2>
+      <article>{postContent}</article>
+    </section>
+  );
+}
+
+function BlogLayout({ children }) {
+  const author = "Jae Doe";
   return (
     <html>
       <head>
@@ -19,7 +82,7 @@ function BlogPostPage({ postContent, author }) {
           <a href="/">Home</a>
           <hr />
         </nav>
-        <article>{postContent}</article>
+        <main>{children}</main>
         <Footer author={author} />
       </body>
     </html>
@@ -43,6 +106,12 @@ function sendHTML(res, jsx) {
   const html = renderJSXToHTML(jsx);
   res.setHeader("Content-Type", "text/html");
   res.end(html);
+}
+
+function throwNotFound(cause) {
+  const notFound = new Error("Not found.", { cause });
+  notFound.statusCode = 404;
+  throw notFound;
 }
 
 function renderJSXToHTML(jsx) {
