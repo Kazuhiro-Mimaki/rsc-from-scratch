@@ -2,8 +2,9 @@ import { createServer } from "http";
 import { readFile } from "fs/promises";
 import { renderToString } from "react-dom/server";
 
-// This is a server to host CDN distributed resources like static files and SSR.
-
+/**
+ * This is a server to host CDN distributed resources like static files and SSR.
+ */
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -13,7 +14,9 @@ createServer(async (req, res) => {
       res.end(content);
       return;
     }
-    // Get the serialized JSX response from the RSC server
+    /**
+     * Get the serialized JSX response from the RSC server
+     */
     const response = await fetch("http://127.0.0.1:8081" + url.pathname);
     if (!response.ok) {
       res.statusCode = response.status;
@@ -22,15 +25,21 @@ createServer(async (req, res) => {
     }
     const clientJSXString = await response.text();
     if (url.searchParams.has("jsx")) {
-      // If the user is navigating between pages, send that serialized JSX as is
+      /**
+       * If the user is navigating between pages, send that serialized JSX as is
+       */
       res.setHeader("Content-Type", "application/json");
       res.end(clientJSXString);
     } else {
-      // If this is an initial page load, revive the tree and turn it into HTML
+      /**
+       * If this is an initial page load, revive the tree and turn it into HTML
+       */
+
       // 1. Let's turn <Router /> into <html>...</html> (an object) first:
       const clientJSX = JSON.parse(clientJSXString, parseJSX);
       // 2. Turn that <html>...</html> into "<html>...</html>" (a string):
       let html = renderToString(clientJSX);
+
       html += `<script>window.__INITIAL_CLIENT_JSX_STRING__ = `;
       html += JSON.stringify(clientJSXString).replace(/</g, "\\u003c");
       html += `</script>`;
