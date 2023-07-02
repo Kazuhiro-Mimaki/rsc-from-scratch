@@ -80,6 +80,7 @@ function BlogLayout({ children }) {
       <body>
         <nav>
           <a href="/">Home</a>
+          <input />
           <hr />
         </nav>
         <main>{children}</main>
@@ -110,14 +111,24 @@ async function sendScript(res, filename) {
 
 async function sendJSX(res, jsx) {
   const clientJSX = await renderJSXToClientJSX(jsx);
-  const clientJSXString = JSON.stringify(clientJSX, null, 2);
+  const clientJSXString = JSON.stringify(clientJSX, stringifyJSX);
   res.setHeader("Content-Type", "application/json");
   res.end(clientJSXString);
 }
 
 async function sendHTML(res, jsx) {
   let html = await renderJSXToHTML(jsx);
-  html += `<script type="module" src="/client.js"></script>`;
+  html += `
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@canary",
+          "react-dom/client": "https://esm.sh/react-dom@canary/client"
+        }
+      }
+    </script>
+    <script type="module" src="/client.js"></script>
+  `;
   res.setHeader("Content-Type", "text/html");
   res.end(html);
 }
@@ -126,6 +137,16 @@ function throwNotFound(cause) {
   const notFound = new Error("Not found.", { cause });
   notFound.statusCode = 404;
   throw notFound;
+}
+
+function stringifyJSX(key, value) {
+  if (value === Symbol.for("react.element")) {
+    return "$RE";
+  } else if (typeof value === "string" && value.startsWith("$")) {
+    return "$" + value;
+  } else {
+    return value;
+  }
 }
 
 async function renderJSXToClientJSX(jsx) {
