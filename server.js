@@ -118,6 +118,12 @@ async function sendJSX(res, jsx) {
 
 async function sendHTML(res, jsx) {
   let html = await renderJSXToHTML(jsx);
+  // Serialize the JSX payload after the HTML to avoid blocking paint:
+  const clientJSX = await renderJSXToClientJSX(jsx);
+  const clientJSXString = JSON.stringify(clientJSX, stringifyJSX);
+  html += `<script>window.__INITIAL_CLIENT_JSX_STRING__ = `;
+  html += JSON.stringify(clientJSXString).replace(/</g, "\\u003c");
+  html += `</script>`;
   html += `
     <script type="importmap">
       {
@@ -202,7 +208,18 @@ async function renderJSXToHTML(jsx) {
     const childHtmls = await Promise.all(
       jsx.map((child) => renderJSXToHTML(child))
     );
-    return childHtmls.join("");
+    let html = "";
+    let wasTextNode = false;
+    let isTextNode = false;
+    for (let i = 0; i < jsx.length; i++) {
+      isTextNode = typeof jsx[i] === "string" || typeof jsx[i] === "number";
+      if (wasTextNode && isTextNode) {
+        html += "<!-- -->";
+      }
+      html += childHtmls[i];
+      wasTextNode = isTextNode;
+    }
+    return html;
   } else if (typeof jsx === "object") {
     if (jsx.$$typeof === Symbol.for("react.element")) {
       if (typeof jsx.type === "string") {
