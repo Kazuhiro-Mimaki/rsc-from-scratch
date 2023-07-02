@@ -117,9 +117,10 @@ async function sendJSX(res, jsx) {
 }
 
 async function sendHTML(res, jsx) {
-  let html = await renderJSXToHTML(jsx);
-  // Serialize the JSX payload after the HTML to avoid blocking paint:
+  // 1. Let's turn <Router /> into <html>...</html> (an object) first:
   const clientJSX = await renderJSXToClientJSX(jsx);
+  // 2. Turn that <html>...</html> into "<html>...</html>" (a string):
+  let html = await renderJSXToHTML(clientJSX);
   const clientJSXString = JSON.stringify(clientJSX, stringifyJSX);
   html += `<script>window.__INITIAL_CLIENT_JSX_STRING__ = `;
   html += JSON.stringify(clientJSXString).replace(/</g, "\\u003c");
