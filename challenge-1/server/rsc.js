@@ -64,12 +64,21 @@ async function Post({ slug }) {
 
 function BlogLayout({ children }) {
   const author = "Jae Doe";
+  const createRandomBgColor = () => {
+    const randomCode = () => Math.floor(Math.random() * 256);
+    return `rgb(${randomCode()}, ${randomCode()}, ${randomCode()})`;
+  };
   return (
     <html>
       <head>
         <title>My blog</title>
       </head>
-      <body>
+      <body
+        style={{
+          background: createRandomBgColor(),
+          transition: "background 1s ease-in",
+        }}
+      >
         <nav>
           <a href="/">Home</a>
           <hr />
