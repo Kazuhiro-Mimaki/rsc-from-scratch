@@ -1,6 +1,7 @@
 import { createServer } from "http";
 import { readFile, readdir } from "fs/promises";
 import sanitizeFilename from "sanitize-filename";
+import ReactMarkdown from "react-markdown";
 
 createServer(async (req, res) => {
   try {
@@ -48,7 +49,7 @@ function BlogPostPage({ postSlug }) {
 async function Post({ slug }) {
   let content;
   try {
-    content = await readFile("./posts/" + slug + ".txt", "utf8");
+    content = await readFile("./posts/" + slug + ".md", "utf8");
   } catch (err) {
     throwNotFound(err);
   }
@@ -57,7 +58,7 @@ async function Post({ slug }) {
       <h2>
         <a href={"/" + slug}>{slug}</a>
       </h2>
-      <article>{content}</article>
+      <ReactMarkdown>{content}</ReactMarkdown>
     </section>
   );
 }
@@ -146,6 +147,12 @@ async function renderJSXToClientJSX(jsx) {
           ...jsx,
           props: await renderJSXToClientJSX(jsx.props),
         };
+      } else if (jsx.type === Symbol.for("react.fragment")) {
+        /**
+         * This is a fragment like <>...</>.
+         * Go over its children to make sure they can be turned into JSON.
+         */
+        return await renderJSXToClientJSX(jsx.props.children);
       } else if (typeof jsx.type === "function") {
         /**
          * This is a custom React component (like <Footer />).
