@@ -126,7 +126,6 @@ function stringifyJSX(key, value) {
 }
 
 async function renderJSXToClientJSX(jsx) {
-  console.log(jsx);
   if (
     typeof jsx === "string" ||
     typeof jsx === "number" ||
@@ -153,6 +152,12 @@ async function renderJSXToClientJSX(jsx) {
           ...jsx,
           props: await renderJSXToClientJSX(jsx.props),
         };
+      } else if (jsx.type === Symbol.for("react.fragment")) {
+        /**
+         * This is a fragment like <>...</>.
+         * Go over its children to make sure they can be turned into JSON.
+         */
+        return await renderJSXToClientJSX(jsx.props.children);
       } else if (typeof jsx.type === "function") {
         /**
          * This is a custom React component (like <Footer />).
