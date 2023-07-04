@@ -30,14 +30,16 @@ async function BlogIndexPage() {
     file.slice(0, file.lastIndexOf("."))
   );
   return (
-    <section>
-      <h1>Welcome to my blog</h1>
-      <div>
-        {postSlugs.map((slug) => (
-          <Post key={slug} slug={slug} />
-        ))}
-      </div>
-    </section>
+    <>
+      <section>
+        <h1>Welcome to my blog</h1>
+        <div>
+          {postSlugs.map((slug) => (
+            <Post key={slug} slug={slug} />
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -53,12 +55,14 @@ async function Post({ slug }) {
     throwNotFound(err);
   }
   return (
-    <section>
-      <h2>
-        <a href={"/" + slug}>{slug}</a>
-      </h2>
-      <article>{content}</article>
-    </section>
+    <>
+      <section>
+        <h2>
+          <a href={"/" + slug}>{slug}</a>
+        </h2>
+        <article>{content}</article>
+      </section>
+    </>
   );
 }
 
@@ -85,14 +89,16 @@ function BlogLayout({ children }) {
 
 function Footer({ author }) {
   return (
-    <footer>
-      <hr />
-      <p>
-        <i>
-          (c) {author} {new Date().getFullYear()}
-        </i>
-      </p>
-    </footer>
+    <>
+      <footer>
+        <hr />
+        <p>
+          <i>
+            (c) {author} {new Date().getFullYear()}
+          </i>
+        </p>
+      </footer>
+    </>
   );
 }
 
@@ -101,6 +107,12 @@ async function sendJSX(res, jsx) {
   const clientJSXString = JSON.stringify(clientJSX, stringifyJSX);
   res.setHeader("Content-Type", "application/json");
   res.end(clientJSXString);
+}
+
+function throwNotFound(cause) {
+  const notFound = new Error("Not found.", { cause });
+  notFound.statusCode = 404;
+  throw notFound;
 }
 
 function stringifyJSX(key, value) {
@@ -114,6 +126,7 @@ function stringifyJSX(key, value) {
 }
 
 async function renderJSXToClientJSX(jsx) {
+  console.log(jsx);
   if (
     typeof jsx === "string" ||
     typeof jsx === "number" ||

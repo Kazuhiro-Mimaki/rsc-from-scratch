@@ -112,6 +112,12 @@ async function sendJSX(res, jsx) {
   res.end(clientJSXString);
 }
 
+function throwNotFound(cause) {
+  const notFound = new Error("Not found.", { cause });
+  notFound.statusCode = 404;
+  throw notFound;
+}
+
 function stringifyJSX(key, value) {
   if (value === Symbol.for("react.element")) {
     return "$RE";
