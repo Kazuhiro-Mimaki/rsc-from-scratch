@@ -2,6 +2,7 @@ import { createServer } from "http";
 import { readFile, readdir } from "fs/promises";
 import sanitizeFilename from "sanitize-filename";
 import ReactMarkdown from "react-markdown";
+import sizeOf from "image-size";
 
 createServer(async (req, res) => {
   try {
@@ -64,7 +65,12 @@ async function Post({ slug }) {
 }
 
 function Image({ src, alt }) {
-  return <img src={`/images/${src}`} alt={alt} width={100} height={100} />;
+  const img = sizeOf(`./static/images/${src}`);
+  const { width, height } = {
+    width: img.height / 20,
+    height: img.width / 20,
+  };
+  return <img src={`/images/${src}`} alt={alt} width={width} height={height} />;
 }
 
 function BlogLayout({ children }) {
