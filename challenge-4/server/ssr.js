@@ -1,6 +1,6 @@
 import { createServer } from "http";
-import { readFile } from "fs/promises";
 import { renderToString } from "react-dom/server";
+import getStaticAsset from "./getStaticAsset.js";
 
 /**
  * This is a server to host CDN distributed resources like static files and SSR.
@@ -8,10 +8,8 @@ import { renderToString } from "react-dom/server";
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
-    if (url.pathname === "/client.js") {
-      const content = await readFile("./client.js", "utf8");
-      res.setHeader("Content-Type", "text/javascript");
-      res.end(content);
+    if (url.pathname.includes(".")) {
+      await getStaticAsset(url.pathname, res);
       return;
     }
     /**
