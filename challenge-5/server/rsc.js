@@ -1,8 +1,8 @@
 import { createServer } from "http";
-import { readFile, readdir } from "fs/promises";
 import sanitizeFilename from "sanitize-filename";
-import ReactMarkdown from "react-markdown";
-import sizeOf from "image-size";
+import { BlogLayout } from "./components/BlogLayout.js";
+import { BlogIndexPage } from "./components/BlogIndexPage.js";
+import { BlogPostPage } from "./components/BlogPostPage.js";
 
 createServer(async (req, res) => {
   try {
@@ -26,98 +26,11 @@ function Router({ url }) {
   return <BlogLayout>{page}</BlogLayout>;
 }
 
-async function BlogIndexPage() {
-  const postFiles = await readdir("./posts");
-  const postSlugs = postFiles.map((file) =>
-    file.slice(0, file.lastIndexOf("."))
-  );
-  return (
-    <section>
-      <h1>Welcome to my blog</h1>
-      <div>
-        {postSlugs.map((slug) => (
-          <Post key={slug} slug={slug} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BlogPostPage({ postSlug }) {
-  return <Post slug={postSlug} />;
-}
-
-async function Post({ slug }) {
-  let content;
-  try {
-    content = await readFile("./posts/" + slug + ".md", "utf8");
-  } catch (err) {
-    throwNotFound(err);
-  }
-  return (
-    <section>
-      <h2>
-        <a href={"/" + slug}>{slug}</a>
-      </h2>
-      <ReactMarkdown components={{ img: Image }}>{content}</ReactMarkdown>
-    </section>
-  );
-}
-
-function Image({ src, alt }) {
-  const img = sizeOf(`./static/images/${src}`);
-  const { width, height } = {
-    width: img.height / 20,
-    height: img.width / 20,
-  };
-  return <img src={`/images/${src}`} alt={alt} width={width} height={height} />;
-}
-
-function BlogLayout({ children }) {
-  const author = "Jae Doe";
-  return (
-    <html>
-      <head>
-        <title>My blog</title>
-      </head>
-      <body>
-        <nav>
-          <a href="/">Home</a>
-          <hr />
-          <input />
-          <hr />
-        </nav>
-        <main>{children}</main>
-        <Footer author={author} />
-      </body>
-    </html>
-  );
-}
-
-function Footer({ author }) {
-  return (
-    <footer>
-      <hr />
-      <p>
-        <i>
-          (c) {author} {new Date().getFullYear()}
-        </i>
-      </p>
-    </footer>
-  );
-}
-
 async function sendJSX(res, jsx) {
   const clientJSX = await renderJSXToClientJSX(jsx);
   const clientJSXString = JSON.stringify(clientJSX, stringifyJSX);
   res.setHeader("Content-Type", "application/json");
   res.end(clientJSXString);
-}
-
-function throwNotFound(cause) {
-  const notFound = new Error("Not found.", { cause });
-  notFound.statusCode = 404;
-  throw notFound;
 }
 
 function stringifyJSX(key, value) {
