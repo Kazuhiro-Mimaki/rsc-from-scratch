@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import ReactMarkdown from "react-markdown";
 import { Image } from "./Image.js";
+import { Comments } from "./Comments.js";
 
 function throwNotFound(cause) {
   const notFound = new Error("Not found.", { cause });
@@ -21,6 +22,7 @@ export async function Post({ slug }) {
         <a href={"/" + slug}>{slug}</a>
       </h2>
       <ReactMarkdown components={{ img: Image }}>{content}</ReactMarkdown>
+      <Comments slug={slug} />
     </section>
   );
 }
