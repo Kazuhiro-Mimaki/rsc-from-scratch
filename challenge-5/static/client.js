@@ -53,6 +53,20 @@ window.addEventListener(
   true
 );
 
+window.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const body = Object.fromEntries(formData.entries());
+  await fetch("/api/comment", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  navigate(window.location.pathname);
+});
+
 window.addEventListener("popstate", () => {
   navigate(window.location.pathname);
 });

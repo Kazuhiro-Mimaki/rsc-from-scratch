@@ -1,5 +1,6 @@
 import { createServer } from "http";
 import { renderToString } from "react-dom/server";
+import { readFile, writeFile } from "fs/promises";
 import getStaticAsset from "./getStaticAsset.js";
 
 /**
@@ -10,6 +11,27 @@ createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname.includes(".")) {
       await getStaticAsset(url.pathname, res);
+      return;
+    }
+    if (req.url === "/api/comment" && req.method === "POST") {
+      const body = await parseRequestBody(req);
+      const commentsData = await readFile(
+        `./comments/${body.slug}.json`,
+        "utf8"
+      );
+      const comments = JSON.parse(commentsData);
+      const newComment = {
+        id: comments.at(-1).id + 1,
+        content: body.content,
+        author: body.author,
+        timestamp: new Date().toISOString(),
+      };
+      comments.push(newComment);
+      const commentsFile = `./comments/${body.slug}.json`;
+      await writeFile(commentsFile, JSON.stringify(comments, null, 2));
+      res.setHeader("Location", "/" + body.slug);
+      res.statusCode = 303;
+      res.end();
       return;
     }
     /**
@@ -61,6 +83,15 @@ createServer(async (req, res) => {
     res.end();
   }
 }).listen(8080);
+
+async function parseRequestBody(req) {
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(chunk);
+  }
+  const buffer = Buffer.concat(chunks);
+  return JSON.parse(buffer.toString());
+}
 
 function parseJSX(key, value) {
   if (value === "$RE") {

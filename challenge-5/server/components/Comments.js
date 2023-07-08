@@ -22,6 +22,7 @@ export async function Comments({ slug }) {
   return (
     <section>
       <h1>comments</h1>
+
       <div>
         {comments.map((comment) => (
           <Comment key={comment.id} comment={comment} />
