@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 
-export default async function getStaticAsset(pathname, res) {
+export async function getStaticAsset(pathname, res) {
   const ext = pathname.slice(pathname.lastIndexOf("."));
   let contentType = "";
 

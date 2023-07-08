@@ -1,5 +1,7 @@
 import { createServer } from "http";
 import sanitizeFilename from "sanitize-filename";
+import { readFile, writeFile } from "fs/promises";
+import { parseRequestBody } from "./parseRequestBody.js";
 import { BlogLayout } from "./components/BlogLayout.js";
 import { BlogIndexPage } from "./components/BlogIndexPage.js";
 import { BlogPostPage } from "./components/BlogPostPage.js";
@@ -7,6 +9,27 @@ import { BlogPostPage } from "./components/BlogPostPage.js";
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (req.url === "/api/comment" && req.method === "POST") {
+      const body = await parseRequestBody(req);
+      const commentsData = await readFile(
+        `./comments/${body.slug}.json`,
+        "utf8"
+      );
+      const comments = JSON.parse(commentsData);
+      const newComment = {
+        id: comments.at(-1).id + 1,
+        content: body.content,
+        author: body.author,
+        timestamp: new Date().toISOString(),
+      };
+      comments.push(newComment);
+      const commentsFile = `./comments/${body.slug}.json`;
+      await writeFile(commentsFile, JSON.stringify(comments, null, 2));
+      res.setHeader("Location", "/" + body.slug);
+      res.statusCode = 303;
+      res.end();
+      return;
+    }
     await sendJSX(res, <Router url={url} />);
   } catch (err) {
     console.error(err);
