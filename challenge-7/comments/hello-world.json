@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "content": "This is an example comment 1 for `hello-world`",
+    "author": "Demo author 1",
+    "timestamp": "2023-07-03"
+  },
+  {
+    "id": 2,
+    "content": "This is an example comment 2 for `hello-world`",
+    "author": "Demo author 2",
+    "timestamp": "2023-07-07"
+  }
+]
