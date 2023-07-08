@@ -1,5 +1,5 @@
 import { readdir } from "fs/promises";
-import { Post } from "./Post.js";
+import { Post } from "../components/Post.js";
 
 export async function BlogIndexPage() {
   const postFiles = await readdir("./posts");

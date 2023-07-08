@@ -1,6 +1,6 @@
-import { Post } from "./Post.js";
-import { Comments } from "./Comments.js";
-import { CommentForm } from "./CommentForm.js";
+import { Post } from "../components/Post.js";
+import { Comments } from "../components/Comments.js";
+import { CommentForm } from "../components/CommentForm.js";
 
 export function BlogPostPage({ postSlug }) {
   return (

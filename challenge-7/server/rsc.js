@@ -3,8 +3,8 @@ import sanitizeFilename from "sanitize-filename";
 import { readFile, writeFile } from "fs/promises";
 import { parseRequestBody } from "./parseRequestBody.js";
 import { BlogLayout } from "./components/BlogLayout.js";
-import { BlogIndexPage } from "./components/BlogIndexPage.js";
-import { BlogPostPage } from "./components/BlogPostPage.js";
+import { BlogIndexPage } from "./pages/BlogIndexPage.js";
+import { BlogPostPage } from "./pages/BlogPostPage.js";
 
 createServer(async (req, res) => {
   try {
