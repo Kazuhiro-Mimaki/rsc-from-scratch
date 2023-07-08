@@ -3,6 +3,22 @@ import { hydrateRoot } from "react-dom/client";
 const root = hydrateRoot(document, getInitialClientJSX());
 let currentPathname = window.location.pathname;
 
+const jsxCache = new Map();
+
+async function navigate(pathname) {
+  currentPathname = pathname;
+
+  if (jsxCache.get(currentPathname)) {
+    root.render(jsxCache.get(currentPathname));
+  } else {
+    const clientJSX = await fetchClientJSX(pathname);
+    jsxCache.set(currentPathname, clientJSX);
+    if (pathname === currentPathname) {
+      root.render(clientJSX);
+    }
+  }
+}
+
 async function navigate(pathname) {
   currentPathname = pathname;
   const clientJSX = await fetchClientJSX(pathname);
